@@ -18,7 +18,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorAccent"
-        app:elevation="?elevation"/>
+        app:elevation="?elevation">
+
+
+            <TextView
+                android:id="@+id/typing_text_view"
+                android:layout_width="65dp"
+                android:layout_height="18dp"
+                android:text="Typing..."
+                android:textColor="@android:color/white"
+                android:gravity="bottom"
+                android:layout_marginLeft="260dp"
+
+                />
+
+
+    </androidx.appcompat.widget.Toolbar>
 
     <ScrollView
         android:layout_width="match_parent"

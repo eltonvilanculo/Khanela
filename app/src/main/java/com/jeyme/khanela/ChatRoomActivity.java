@@ -3,7 +3,9 @@ package com.jeyme.khanela;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -24,9 +27,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.RemoteMessage;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -38,16 +43,18 @@ import androidx.appcompat.widget.Toolbar;
 public class ChatRoomActivity extends AppCompatActivity {
     public static final String USER = "current_user";
     public static final String CHAT = "chat_room";
-
+    RemoteMessage remoteMessage;
     private final String TAG = getClass().getSimpleName();
     private LinearLayout contentLayout;
     private EditText inputSendMsg;
     DatabaseReference messagesDatabase;
+    TextView typingTextView;
 
     private ChatData chatData;
     private User currentUser;
     private ChildEventListener childEventListener;
     private ImageButton sendMessageButton;
+
 
 
     @Override
@@ -56,10 +63,17 @@ public class ChatRoomActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat_room);
         contentLayout = findViewById(R.id.chat_room_layout);
         inputSendMsg = findViewById(R.id.input_send_chat);
+        typingTextView = findViewById(R.id.typing_text_view);
         Toolbar toolbar = findViewById(R.id.chat_room_toolbar);
 
 
 
+
+        Intent typeIntent = new Intent(ChatRoomActivity.this,NotificationService.class);
+        typeIntent.putExtra("key",typingTextView.getText().toString());
+
+
+        typingTextView.setVisibility(TextView.GONE);
         try {
             currentUser = getIntent().getParcelableExtra(USER);
             chatData = getIntent().getParcelableExtra(CHAT);
@@ -74,8 +88,29 @@ public class ChatRoomActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         setUpDatabase();
+        inputSendMsg.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
+            }
 
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                count=inputSendMsg.getText().length();
+                if (count==0) {
+                    typingTextView.setVisibility(TextView.GONE);
+                }else{
+                    typingTextView.setVisibility(TextView.VISIBLE);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        typingTextView.setVisibility(TextView.GONE);
 
         sendMessageButton = findViewById(R.id.btn_send_chat);
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
@@ -90,13 +125,15 @@ public class ChatRoomActivity extends AppCompatActivity {
                 message.setChatId(chatData.getChatRoomId());
 
                 sendMessage(message);
-
+                inputSendMsg.setText("");
+                typingTextView.setVisibility(TextView.GONE);
 
             }
         });
 
 
     }
+
 
     private void registerConversation(String chatRoomId) {
         FirebaseMessaging.getInstance().subscribeToTopic(chatRoomId)
@@ -116,7 +153,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             @Override
             public void onComplete(@Nullable DatabaseError databaseError, @NonNull DatabaseReference databaseReference) {
                 if (databaseError == null) {
-                    inputSendMsg.setText("");
+
 
                 } else {
                     Log.e(TAG, "sendMessage: ", databaseError.toException());

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,6 +43,7 @@ public class NotificationService extends FirebaseMessagingService {
 
 
 
+
     }
     public void createNotification(String aMessage, Context context,Map<String, String> data) {
         final int NOTIFY_ID = 0; // ID of notification
@@ -49,6 +51,7 @@ public class NotificationService extends FirebaseMessagingService {
         String title = "Mensagem"; // Default Channel
         String msg = data.get("text");
         String senderId = data.get("senderId");
+
 
         Intent intent;
         PendingIntent pendingIntent;
